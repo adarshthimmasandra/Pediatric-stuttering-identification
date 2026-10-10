@@ -1,0 +1,47 @@
+# Default: CPU-friendly. Frozen backbone + cached features, only the multi-task head is trained.
+# For GPU end-to-end fine-tuning use configs/gpu_finetune.yaml.
+data:
+  manifest: data/sep28k/manifest.csv
+  sample_rate: 16000
+  clip_seconds: 3.0
+  label_threshold: 2        # >= 2 of 3 annotators => positive
+  soft_labels: false
+  drop_unusable: true
+  severity_weights: {Block: 1.0, Prolongation: 0.8, SoundRep: 0.8, WordRep: 0.6, Interjection: 0.3}
+
+model:
+  backbone: facebook/wav2vec2-base   # or facebook/hubert-base-ls960, microsoft/wavlm-base-plus
+  pooling: mean_std
+  freeze_backbone: true
+  freeze_feature_encoder: true
+  unfreeze_top_n_layers: 0
+  proj_dim: 256
+  dropout: 0.2
+
+train:
+  output_dir: checkpoints
+  cache_dir: cache
+  cache_embeddings: true
+  epochs: 30
+  batch_size: 32
+  lr_head: 1.0e-3
+  lr_backbone: 2.0e-5
+  weight_decay: 1.0e-2
+  warmup_ratio: 0.05
+  severity_loss_weight: 1.0
+  max_pos_weight: 10.0
+  grad_accum_steps: 1
+  patience: 6
+  amp: true
+  augment: true
+  num_workers: 0
+  max_samples: 0
+  seed: 42
+  device: auto
+
+infer:
+  window_seconds: 3.0
+  hop_seconds: 1.5
+  batch_size: 16
+  band_cutoffs: [5.0, 15.0, 30.0, 50.0, 70.0]
+  band_names: [fluent, very mild, mild, moderate, severe, very severe]

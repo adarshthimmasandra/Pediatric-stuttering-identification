@@ -1,0 +1,20 @@
+# End-to-end fine-tuning on a CUDA GPU (e.g. Colab T4/A100). Only keys that differ from defaults.
+model:
+  backbone: facebook/wav2vec2-base
+  pooling: attentive
+  freeze_backbone: false
+  freeze_feature_encoder: true
+
+train:
+  output_dir: checkpoints/gpu
+  cache_embeddings: false
+  epochs: 15
+  batch_size: 16
+  grad_accum_steps: 2
+  lr_head: 5.0e-4
+  lr_backbone: 2.0e-5
+  warmup_ratio: 0.1
+  patience: 4
+  amp: true
+  augment: true
+  num_workers: 2   # Colab VMs have 2 CPU cores

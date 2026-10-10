@@ -1,0 +1,37 @@
+# RunPod GPU end-to-end fine-tuning configuration.
+# Assumes a CUDA GPU with at least 16 GB VRAM (e.g. RTX 3090/4090) and fast local NVMe storage.
+# Data is loaded from Hugging Face Datasets, not from Google Drive.
+model:
+  backbone: facebook/wav2vec2-base
+  pooling: attentive
+  freeze_backbone: false
+  freeze_feature_encoder: true
+
+train:
+  output_dir: checkpoints/runpod
+  cache_embeddings: false
+  epochs: 20
+  batch_size: 32          # 24 GB card; raise to 48-64 on A100 40/80 GB
+  grad_accum_steps: 1     # effective batch = 32
+  lr_head: 5.0e-4
+  lr_backbone: 2.0e-5
+  warmup_ratio: 0.1
+  patience: 5
+  amp: true
+  augment: true
+  num_workers: 6          # enough CPU cores to feed the GPU; lower if RAM is tight
+  max_samples: 0
+
+data:
+  manifest: null          # loaded dynamically from Hugging Face Datasets
+  clip_seconds: 3.0
+  sample_rate: 16000
+  label_threshold: 2
+  soft_labels: true
+  severity_weights:
+    Block: 0.35
+    Prolongation: 0.25
+    SoundRep: 0.15
+    WordRep: 0.15
+    Interjection: 0.10
+  drop_unusable: true
